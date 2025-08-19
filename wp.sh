@@ -28,8 +28,8 @@ function install_wp_cli() {
 }
 
 function scan_all_plugins() {
+    # Логируем только в файл, не выводим в stdout
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔍 Сканирование всех плагинов на всех сайтах" >> "$LOG_FILE"
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔍 Сканирование всех плагинов на всех сайтах"
     
     declare -A PLUGIN_SITES
     declare -A PLUGIN_COUNT
@@ -37,7 +37,6 @@ function scan_all_plugins() {
     # Проверяем, что команда v-list-users доступна
     if ! command -v v-list-users &> /dev/null; then
         echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Команда v-list-users не найдена. Возможно, HestiaCP не установлен." >> "$LOG_FILE"
-        echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Команда v-list-users не найдена. Возможно, HestiaCP не установлен."
         TEMP_FILE=$(mktemp)
         echo "$TEMP_FILE"
         return
@@ -46,7 +45,6 @@ function scan_all_plugins() {
     HESTIA_USERS=$(v-list-users plain | awk '{print $1}')
     if [ -z "$HESTIA_USERS" ]; then
         echo "[$(date '+%Y-%m-%d %H:%M:%S')] ⚠️ Пользователи HestiaCP не найдены" >> "$LOG_FILE"
-        echo "[$(date '+%Y-%m-%d %H:%M:%S')] ⚠️ Пользователи HestiaCP не найдены"
         TEMP_FILE=$(mktemp)
         echo "$TEMP_FILE"
         return
@@ -74,7 +72,6 @@ function scan_all_plugins() {
     done
     
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] 📊 Просканировано $SITES_SCANNED сайтов, найдено $PLUGINS_FOUND установок плагинов" >> "$LOG_FILE"
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] 📊 Просканировано $SITES_SCANNED сайтов, найдено $PLUGINS_FOUND установок плагинов"
     
     # Сохраняем результаты в временный файл
     TEMP_FILE=$(mktemp)
@@ -82,13 +79,11 @@ function scan_all_plugins() {
     # Проверяем, есть ли плагины
     if [ ${#PLUGIN_COUNT[@]} -eq 0 ]; then
         echo "[$(date '+%Y-%m-%d %H:%M:%S')] ⚠️ Плагины не найдены на сайтах" >> "$LOG_FILE"
-        echo "[$(date '+%Y-%m-%d %H:%M:%S')] ⚠️ Плагины не найдены на сайтах"
         echo "$TEMP_FILE"
         return
     fi
     
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] 📊 Найдено ${#PLUGIN_COUNT[@]} уникальных плагинов" >> "$LOG_FILE"
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] 📊 Найдено ${#PLUGIN_COUNT[@]} уникальных плагинов"
     
     for PLUGIN in "${!PLUGIN_COUNT[@]}"; do
         echo "$PLUGIN|${PLUGIN_COUNT[$PLUGIN]}|${PLUGIN_SITES[$PLUGIN]}" >> "$TEMP_FILE"
@@ -106,6 +101,7 @@ function show_plugins_menu() {
     echo "========= Список всех плагинов на всех сайтах ========="
     
     # Сканируем плагины и сохраняем результат
+    echo "🔍 Сканирование плагинов..."
     TEMP_FILE=$(scan_all_plugins)
     
     # Проверяем, что файл существует и не пустой
