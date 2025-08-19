@@ -57,7 +57,7 @@ function scan_all_plugins() {
         DOMAINS=$(v-list-web-domains "$USER" plain | awk '{print $1}')
         for DOMAIN in $DOMAINS; do
             SITES_SCANNED=$((SITES_SCANNED + 1))
-            WEB_ROOT=$(v-list-web-domain "$USER" "$DOMAIN" plain | grep '^HOMEDIR=' | cut -d '=' -f2)/$DOMAIN/public_html
+            WEB_ROOT=$(v-list-web-domain "$USER" "$DOMAIN" plain | awk '{print $3}')
             
             # Отладочная информация
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔍 Проверяю: $WEB_ROOT" >> "$LOG_FILE"
@@ -207,7 +207,7 @@ function show_plugin_status() {
     for USER in $HESTIA_USERS; do
         DOMAINS=$(v-list-web-domains "$USER" plain | awk '{print $1}')
         for DOMAIN in $DOMAINS; do
-            WEB_ROOT=$(v-list-web-domain "$USER" "$DOMAIN" plain | grep '^HOMEDIR=' | cut -d '=' -f2)/$DOMAIN/public_html
+            WEB_ROOT=$(v-list-web-domain "$USER" "$DOMAIN" plain | awk '{print $3}')
             if [ -d "$WEB_ROOT/wp-content/plugins/$SELECTED_PLUGIN" ]; then
                 STATUS=$(sudo -u "$USER" wp --path="$WEB_ROOT" plugin status "$SELECTED_PLUGIN" 2>/dev/null | grep "Status:" | cut -d':' -f2 | xargs)
                 if [ "$STATUS" = "Active" ]; then
@@ -233,7 +233,7 @@ function deactivate_plugin() {
     for USER in $HESTIA_USERS; do
         DOMAINS=$(v-list-web-domains "$USER" plain | awk '{print $1}')
         for DOMAIN in $DOMAINS; do
-            WEB_ROOT=$(v-list-web-domain "$USER" "$DOMAIN" plain | grep '^HOMEDIR=' | cut -d '=' -f2)/$DOMAIN/public_html
+            WEB_ROOT=$(v-list-web-domain "$USER" "$DOMAIN" plain | awk '{print $3}')
             if [ -d "$WEB_ROOT/wp-content/plugins/$SELECTED_PLUGIN" ]; then
                 log "🔧 [$DOMAIN] Деактивация плагина"
                 if sudo -u "$USER" wp --path="$WEB_ROOT" plugin deactivate "$SELECTED_PLUGIN" 2>&1 | sudo tee -a "$LOG_FILE" > /dev/null; then
@@ -266,7 +266,7 @@ function remove_plugin() {
     for USER in $HESTIA_USERS; do
         DOMAINS=$(v-list-web-domains "$USER" plain | awk '{print $1}')
         for DOMAIN in $DOMAINS; do
-            WEB_ROOT=$(v-list-web-domain "$USER" "$DOMAIN" plain | grep '^HOMEDIR=' | cut -d '=' -f2)/$DOMAIN/public_html
+            WEB_ROOT=$(v-list-web-domain "$USER" "$DOMAIN" plain | awk '{print $3}')
             if [ -d "$WEB_ROOT/wp-content/plugins/$SELECTED_PLUGIN" ]; then
                 log "🔧 [$DOMAIN] Деактивация и удаление"
                 if sudo -u "$USER" wp --path="$WEB_ROOT" plugin deactivate "$SELECTED_PLUGIN" 2>&1 | sudo tee -a "$LOG_FILE" > /dev/null && \
