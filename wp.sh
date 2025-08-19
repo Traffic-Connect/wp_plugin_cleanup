@@ -31,25 +31,57 @@ function scan_all_plugins() {
     declare -A PLUGIN_SITES
     declare -A PLUGIN_COUNT
     
+    # Проверяем, что команда v-list-users доступна
+    if ! command -v v-list-users &> /dev/null; then
+        log "❌ Команда v-list-users не найдена. Возможно, HestiaCP не установлен."
+        TEMP_FILE=$(mktemp)
+        echo "$TEMP_FILE"
+        return
+    fi
+    
     HESTIA_USERS=$(v-list-users plain | awk '{print $1}')
+    if [ -z "$HESTIA_USERS" ]; then
+        log "⚠️ Пользователи HestiaCP не найдены"
+        TEMP_FILE=$(mktemp)
+        echo "$TEMP_FILE"
+        return
+    fi
+    
+    SITES_SCANNED=0
+    PLUGINS_FOUND=0
+    
     for USER in $HESTIA_USERS; do
         DOMAINS=$(v-list-web-domains "$USER" plain | awk '{print $1}')
         for DOMAIN in $DOMAINS; do
+            SITES_SCANNED=$((SITES_SCANNED + 1))
             WEB_ROOT=$(v-list-web-domain "$USER" "$DOMAIN" plain | grep '^HOMEDIR=' | cut -d '=' -f2)/$DOMAIN/public_html
-            if [ -d "$WEB_ROOT/wp-content/plugins" ]; then
+            if [ -d "$WEB_ROOT" ] && [ -d "$WEB_ROOT/wp-content/plugins" ]; then
                 PLUGINS=$(ls "$WEB_ROOT/wp-content/plugins/" 2>/dev/null)
                 for PLUGIN in $PLUGINS; do
                     if [ -d "$WEB_ROOT/wp-content/plugins/$PLUGIN" ]; then
                         PLUGIN_SITES["$PLUGIN"]="${PLUGIN_SITES[$PLUGIN]} $DOMAIN"
                         PLUGIN_COUNT["$PLUGIN"]=$((PLUGIN_COUNT[$PLUGIN] + 1))
+                        PLUGINS_FOUND=$((PLUGINS_FOUND + 1))
                     fi
                 done
             fi
         done
     done
     
+    log "📊 Просканировано $SITES_SCANNED сайтов, найдено $PLUGINS_FOUND установок плагинов"
+    
     # Сохраняем результаты в временный файл
     TEMP_FILE=$(mktemp)
+    
+    # Проверяем, есть ли плагины
+    if [ ${#PLUGIN_COUNT[@]} -eq 0 ]; then
+        log "⚠️ Плагины не найдены на сайтах"
+        echo "$TEMP_FILE"
+        return
+    fi
+    
+    log "📊 Найдено ${#PLUGIN_COUNT[@]} уникальных плагинов"
+    
     for PLUGIN in "${!PLUGIN_COUNT[@]}"; do
         echo "$PLUGIN|${PLUGIN_COUNT[$PLUGIN]}|${PLUGIN_SITES[$PLUGIN]}" >> "$TEMP_FILE"
     done
@@ -65,7 +97,16 @@ function show_plugins_menu() {
     echo ""
     echo "========= Список всех плагинов на всех сайтах ========="
     
+    # Сканируем плагины и сохраняем результат
     TEMP_FILE=$(scan_all_plugins)
+    
+    # Проверяем, что файл существует и не пустой
+    if [ ! -f "$TEMP_FILE" ] || [ ! -s "$TEMP_FILE" ]; then
+        echo "❌ Плагины не найдены на сайтах"
+        rm -f "$TEMP_FILE"
+        return
+    fi
+    
     PLUGIN_LIST=()
     PLUGIN_INFO=()
     

@@ -142,6 +142,21 @@ v-list-users plain
 
 # Проверьте структуру директорий
 ls -la /home/*/web/*/public_html/wp-content/plugins/
+
+# Проверьте логи скрипта
+tail -f /var/log/wp_plugin_cleanup.log
+```
+
+### Ошибка "No such file or directory" с временными файлами
+```bash
+# Проверьте права на /tmp/
+ls -la /tmp/
+
+# Проверьте свободное место
+df -h /tmp/
+
+# Перезапустите скрипт
+sudo ./wp.sh
 ```
 
 ### Ошибки с базой данных
@@ -172,5 +187,7 @@ wp.sh
     ├── show_main_menu() - главное меню
     └── show_plugin_actions_menu() - меню действий
 ```
+
+
 
 
