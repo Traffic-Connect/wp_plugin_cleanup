@@ -1,11 +1,46 @@
 #!/bin/bash
 
+# Цветовые коды для красивого вывода
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+WHITE='\033[1;37m'
+GRAY='\033[0;37m'
+NC='\033[0m' # No Color
+
 LOG_FILE="/var/log/wp_plugin_cleanup.log"
 SELECTED_PLUGIN=""
 
 function log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG_FILE"
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+    echo -e "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+}
+
+function log_success() {
+    local message="$1"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $message" >> "$LOG_FILE"
+    echo -e "${GREEN}[$(date '+%Y-%m-%d %H:%M:%S')] ✅ $message${NC}"
+}
+
+function log_warning() {
+    local message="$1"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $message" >> "$LOG_FILE"
+    echo -e "${YELLOW}[$(date '+%Y-%m-%d %H:%M:%S')] ⚠️ $message${NC}"
+}
+
+function log_error() {
+    local message="$1"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $message" >> "$LOG_FILE"
+    echo -e "${RED}[$(date '+%Y-%m-%d %H:%M:%S')] ❌ $message${NC}"
+}
+
+function log_info() {
+    local message="$1"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $message" >> "$LOG_FILE"
+    echo -e "${BLUE}[$(date '+%Y-%m-%d %H:%M:%S')] ℹ️ $message${NC}"
 }
 
 function check_root() {
@@ -17,13 +52,13 @@ function check_root() {
 
 function install_wp_cli() {
     if ! command -v wp &> /dev/null; then
-        log "📦 WP-CLI не найден. Устанавливаю..."
+        log_info "WP-CLI не найден. Устанавливаю..."
         curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
         chmod +x wp-cli.phar
         mv wp-cli.phar /usr/local/bin/wp
-        log "✅ WP-CLI установлен."
+        log_success "WP-CLI установлен."
     else
-        log "✅ WP-CLI уже установлен."
+        log_success "WP-CLI уже установлен."
     fi
 }
 
