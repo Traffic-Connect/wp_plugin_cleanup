@@ -1,9 +1,14 @@
 # Логи
 *.log
+/var/log/wp_plugin_cleanup.log
 
 # Временные файлы
 *.tmp
 *.temp
+/tmp/
+
+# WP-CLI временные файлы
+wp-cli.phar
 
 # Системные файлы
 .DS_Store
@@ -12,6 +17,9 @@ Thumbs.db
 # IDE файлы
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# WP-CLI временные файлы
-wp-cli.phar
+# Backup файлы
+*.bak
+*.backup
