@@ -58,15 +58,25 @@ function scan_all_plugins() {
         for DOMAIN in $DOMAINS; do
             SITES_SCANNED=$((SITES_SCANNED + 1))
             WEB_ROOT=$(v-list-web-domain "$USER" "$DOMAIN" plain | grep '^HOMEDIR=' | cut -d '=' -f2)/$DOMAIN/public_html
+            
+            # Отладочная информация
+            echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔍 Проверяю: $WEB_ROOT" >> "$LOG_FILE"
+            
             if [ -d "$WEB_ROOT" ] && [ -d "$WEB_ROOT/wp-content/plugins" ]; then
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Найдена директория плагинов: $WEB_ROOT/wp-content/plugins" >> "$LOG_FILE"
                 PLUGINS=$(ls "$WEB_ROOT/wp-content/plugins/" 2>/dev/null)
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] 📦 Плагины в $DOMAIN: $PLUGINS" >> "$LOG_FILE"
+                
                 for PLUGIN in $PLUGINS; do
                     if [ -d "$WEB_ROOT/wp-content/plugins/$PLUGIN" ]; then
                         PLUGIN_SITES["$PLUGIN"]="${PLUGIN_SITES[$PLUGIN]} $DOMAIN"
                         PLUGIN_COUNT["$PLUGIN"]=$((PLUGIN_COUNT[$PLUGIN] + 1))
                         PLUGINS_FOUND=$((PLUGINS_FOUND + 1))
+                        echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Добавлен плагин: $PLUGIN на $DOMAIN" >> "$LOG_FILE"
                     fi
                 done
+            else
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Директория не найдена: $WEB_ROOT/wp-content/plugins" >> "$LOG_FILE"
             fi
         done
     done
