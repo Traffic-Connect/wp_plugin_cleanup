@@ -26,17 +26,12 @@
 
 1. **Скачайте скрипт:**
 ```bash
-wget https://raw.githubusercontent.com/Traffic-Connect/wp_plugin_cleanup/main/wp.sh
+mkdir -p wp_plugin_cleanup/ && cd wp_plugin_cleanup/ && wget https://raw.githubusercontent.com/Traffic-Connect/wp_plugin_cleanup/main/wp.sh
 ```
 
-2. **Сделайте исполняемым:**
+2. **Сделайте исполняемым и запустите:**
 ```bash
-chmod +x wp.sh
-```
-
-3. **Запустите от root:**
-```bash
-sudo ./wp.sh
+chmod +x wp.sh && sudo ./wp.sh
 ```
 
 ## 📖 Функции
